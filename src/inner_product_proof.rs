@@ -442,7 +442,7 @@ mod tests {
         let b_prime = b.iter().zip(util::exp_iter(y_inv)).map(|(bi, yi)| bi * yi);
         // a.iter() has Item=&Scalar, need Item=Scalar to chain with b_prime
         let a_prime = a.iter().cloned();
-
+        // First argument is scalar and second is vector.
         let P = RistrettoPoint::vartime_multiscalar_mul(
             a_prime.chain(b_prime).chain(iter::once(c)),
             G.iter().chain(H.iter()).chain(iter::once(&Q)),
