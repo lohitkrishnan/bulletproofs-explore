@@ -3,6 +3,7 @@ extern crate bulletproofs;
 extern crate curve25519_dalek;
 extern crate merlin;
 extern crate rand;
+extern crate bigint;
 
 use bulletproofs::r1cs::*;
 use bulletproofs::{BulletproofGens, PedersenGens};
@@ -13,27 +14,44 @@ use rand::thread_rng;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::error::Error;
+use bigint::uint::U256;
 
 pub fn getEquation(
     //cs: &mut <Type as bulletproofs::r1cs::RandomizableConstraintSystem>::RandomizedCS,
     varArr : & Vec<Variable>,
-    circuitConfigArr : &Vec<i32>,
+    circuitConfigArr : &Vec<String>,
     mut i :  usize,
 ) -> LinearCombination {
 
      let mut a : LinearCombination = LinearCombination::default();
-        let mut n_terms = circuitConfigArr[i];
+        //let mut n_terms = circuitConfigArr[i];
+        let mut n_terms = circuitConfigArr[i].parse::<i32>().unwrap();;
         i = i  + 1;
         let mut term_cnt = 0;
         while term_cnt < n_terms {
             //i = i + 2;
-            let mut varNum  = circuitConfigArr[i];
-            let mut coeff = circuitConfigArr[i+1] ;
-            if coeff < 0 {
-                coeff = coeff * -1;
-                a  =  a - Scalar::from(coeff as u32)*varArr[varNum as usize];
+            let mut varNum  = circuitConfigArr[i].parse::<i32>().unwrap();
+            let mut coeff = circuitConfigArr[i+1].clone();
+            let mut isNeg = false;
+            if(circuitConfigArr[i+1].starts_with('-')){
+                coeff = coeff[1..].to_string();
+                
+                isNeg = true;
+            }
+
+            let mut coeff_bits = [0u8;32];
+            bigint::uint::U256::from_dec_str(&coeff).unwrap().to_little_endian(&mut coeff_bits);
+            //bigint::uint::U256::from_dec_str(&coeff).unwrap().to_little_endian(&mut coeff_bits);
+            let mut coeff_scalar =  Scalar::from_bits(coeff_bits);
+            
+
+            if isNeg {
+                //coeff = coeff * -1;
+                //a  =  a - Scalar::from(coeff as u32)*varArr[varNum as usize];
+                a  =  a - coeff_scalar*varArr[varNum as usize];
             } else {
-                a  =  a + Scalar::from(coeff as u32)*varArr[varNum as usize];  
+                //a  =  a + Scalar::from(coeff as u32)*varArr[varNum as usize];  
+                a  =  a + coeff_scalar*varArr[varNum as usize];  
             }
             
             i = i + 2;
@@ -42,11 +60,11 @@ pub fn getEquation(
     return a;
 }
 
-pub fn variable_argument<CS: ConstraintSystem>(
+pub fn variable_argument_bigint<CS: ConstraintSystem>(
     cs: &mut CS,
     varArr : & Vec<Variable>,
     arrLen : usize,
-    circuitConfigArr : &Vec<i32>,
+    circuitConfigArr : &Vec<String>,
 ) -> Result<(), R1CSError> {
     //cs.specify_randomized_constraints(move |cs| {
         // Get challenge scalar x
@@ -66,19 +84,24 @@ pub fn variable_argument<CS: ConstraintSystem>(
     let mut i : usize = 0;
 
     while i < circuitConfigArr.len() {
-        println!("before a - {}",i);
+        //println!("before a - {}",i);
         let mut a = getEquation( varArr, circuitConfigArr, i);
-        println!("before a - {}",i);
-        i = i + (circuitConfigArr[i] as usize)*2  + 1;
-        println!("after a - {}",i);
+        //println!("before a - {}",i);
+        circuitConfigArr[i].parse::<i32>().unwrap();
+
+        //i = i + (circuitConfigArr[i] as usize)*2  + 1;
+        i = i + circuitConfigArr[i].parse::<usize>().unwrap()*2  + 1;
+        //println!("after a - {}",i);
         let mut b = getEquation( varArr, circuitConfigArr,i);
-        println!("after a - {}",i);
-        i = i + (circuitConfigArr[i] as usize)*2  + 1;
-        println!("after b - {}",i);
+        //println!("after a - {}",i);
+        //i = i + (circuitConfigArr[i] as usize)*2  + 1;
+        i = i + circuitConfigArr[i].parse::<usize>().unwrap()*2  + 1;
+        //println!("after b - {}",i);
         let mut c = getEquation( varArr, circuitConfigArr,i);
-        println!("after b - {}",i);
-        i = i + (circuitConfigArr[i] as usize)*2  + 1;
-        println!("after c - {}",i);
+        //println!("after b - {}",i);
+        //i = i + (circuitConfigArr[i] as usize)*2  + 1;
+        i = i + circuitConfigArr[i].parse::<usize>().unwrap()*2  + 1;
+        //println!("after c - {}",i);
 
        let (_, _, lhs) = cs.multiply(a, b);
         // (C - x)*(D - x) = output_mul
@@ -100,7 +123,7 @@ pub fn variable_argument<CS: ConstraintSystem>(
 
 pub fn prove(
     rawVar: &[u32],
-    circuitConfigArr : &Vec<i32>,
+    circuitConfigArr : &Vec<String>,
 ) -> Result<
     (
         R1CSProof,
@@ -108,7 +131,40 @@ pub fn prove(
     ),
     R1CSError,
 > {
+    // let one = Scalar::from(1u32);
+    // println!(" 1 {:?}", one.to_bytes());
+    // let minusOne = -one;
+    // println!(" -1 {:?}", minusOne.to_bytes());
+
+    // let two = Scalar::from(2u32);
+    // println!(" 2 {:?}", two.to_bytes());
+    // let minusTwo = -two;
+    // println!(" -2 {:?}", minusTwo.to_bytes());
+
+    // let four = Scalar::from(2u32);
+    // println!(" 4 {:?}", four.to_bytes());
+
+
+
+    // let A : Vec<Scalar> = rawVar.iter().map(|&x| {
+    //     let k : u32 = (x.abs() as u32);
+    //     if x.signum() == -1 
+    //     { 
+    //         //let m = k.into();
+    //         let m = Scalar::zero()-Scalar::from(k);
+    //         println!("k === > {}",k);
+    //         (m)
+    //     } else {
+    //         //Scalar::from(k);
+    //         k.into()
+    //     }
+    //     } ).collect();
+
     let A : Vec<Scalar> = rawVar.iter().map(|&x| x.into()).collect();
+
+        // println!("Printing the vector-----");
+        // println!("{:?}", A);
+        // println!("");
     // Common fields for prover and verifier
     let pc_gens = PedersenGens::default();
     let bp_gens = BulletproofGens::new(128, 1);
@@ -138,7 +194,7 @@ pub fn prove(
  
     // Add 2-shuffle gadget constraints to the prover's constraint system
     
-    variable_argument(&mut prover, &varArr, A.len(), circuitConfigArr)?;
+    variable_argument_bigint(&mut prover, &varArr, A.len(), circuitConfigArr)?;
 
     // Create a proof
     let proof = prover.prove(&bp_gens)?;
@@ -149,7 +205,7 @@ pub fn prove(
 pub fn verify(
     proof: R1CSProof,
     ComArr: &Vec<CompressedRistretto>,
-    circuitConfigArr : &Vec<i32>,
+    circuitConfigArr : &Vec<String>,
 ) -> Result<(), R1CSError> {
     // Common fields for prover and verifier
     let pc_gens = PedersenGens::default();
@@ -176,7 +232,7 @@ pub fn verify(
     }
 
     // Add 2-shuffle gadget constraints to the verifier's constraint system
-    variable_argument(&mut verifier, &varArr, ComArr.len(), circuitConfigArr)?;
+    variable_argument_bigint(&mut verifier, &varArr, ComArr.len(), circuitConfigArr)?;
     // Verify the proof
     Ok(verifier.verify(&proof, &pc_gens, &bp_gens)?)
 }
@@ -186,38 +242,47 @@ mod tests {
     use super::*;
 
     #[test]
-    fn variable_argument() -> Result<(),Box<dyn Error>>{
-        let mut inputArr :  Vec<i32> = Vec::new();
-        let file = File::open("/Users/lohitkrishnan/Documents/IBM/Blockchain/ZKP/bullet-proofs-repo/bulletproofs/file.txt")?;
+    fn variable_argument_bigint() -> Result<(),Box<dyn Error>>{
+        let filename = "/Users/lohitkrishnan/Documents/IBM/Blockchain/ZKP/bullet-proofs-repo/bulletproofs/file.txt";
+        
+        //let mut inputArr :  Vec<i32> = Vec::new();
+        let mut inputArr1 :  Vec<String> = Vec::new();
+        //let file = File::open("/Users/lohitkrishnan/Documents/IBM/Blockchain/ZKP/bullet-proofs-repo/bulletproofs/file.txt")?;
+        let file = File::open(filename)?;
         let mut lines = BufReader::new(file).lines();
         let len = lines.nth(0).expect("No line found at that position").unwrap();
-        println!("{}", len); 
-        println!("---><----");
+        //println!("{}", len); 
+        //println!("---><----");
     for line in lines {
         let l = line.unwrap();
-        inputArr.push(l.parse::<i32>().unwrap());
+        //inputArr.push(l.parse::<i32>().unwrap());
+        inputArr1.push(l.parse::<String>().unwrap());
         //println!("{}", l); 
     }
-    for i  in inputArr.iter() {
-        println!("{}", i);
-    }
+    println!("string Array is -------");
+    // for i  in inputArr1.iter() {
+    //     println!("{}", i);
+    // }
+    //-----
+    
+    //------
 /*
     for line in BufReader::new(file).lines() {
         let l = line.unwrap();
         println!("{}", l); 
     }
     */
-    println!("Printing Done!!");
-        //assert!(variable_argument_helper(&vec![0; len.parse::<usize>().unwrap()], &inputArr).is_ok());
-        //assert!(variable_argument_helper(&vec![1,2, 1, 4, 4], &inputArr).is_ok());
-        assert!(variable_argument_helper(&vec![1,2, 1, 4, 4], &inputArr).is_ok());
-        //assert!(variable_argument_helper(&vec![1,6, 6, 6, 6], &inputArr).is_ok());
-        //assert!(variable_argument_helper(&vec![3, 3, 6, 3]).is_err());
+    //println!("Printing Done!!");
+        //assert!(variable_argument_bigint_helper(&vec![0; len.parse::<usize>().unwrap()], &inputArr).is_ok());
+        //assert!(variable_argument_bigint_helper(&vec![1,2, 1, 4, 4], &inputArr1).is_ok());
+        assert!(variable_argument_bigint_helper(&vec![0,2, 1, 4, 4], &inputArr1).is_ok());
+        //assert!(variable_argument_bigint_helper(&vec![1,1, 1, 2, 4], &inputArr1).is_ok());
+        //assert!(variable_argument_bigint_helper(&vec![3, 3, 6, 3]).is_err());
         Ok(())
     }
 
-    fn variable_argument_helper(varArr : &Vec<u32>, circuitConfigArr :  &Vec<i32>) -> Result<(), R1CSError> {
-        let (proof, comVec) = prove(varArr, circuitConfigArr)?;
+    fn variable_argument_bigint_helper( varArr : &Vec<u32>, circuitConfigArr :  &Vec<String>) -> Result<(), R1CSError> {
+        let (proof, comVec) = prove( varArr, circuitConfigArr)?;
         //verify(proof, A_com, B_com, C_com, D_com)
         verify(proof, &comVec, circuitConfigArr)
     }

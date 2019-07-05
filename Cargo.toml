@@ -24,6 +24,7 @@ serde_derive = "1"
 failure = "0.1"
 merlin = "1"
 clear_on_drop = "0.2"
+bigint = "4.4.1"
 
 [dev-dependencies]
 hex = "0.3"
@@ -50,9 +51,23 @@ yoloproofs = []
 #name = "two-variable-write"
 #required-features = ["yoloproofs"]
 
+# [[test]]
+# name = "big-int-experiment"
+# required-features = ["yoloproofs"]
+
+# [[test]]
+# name = "negative-input-test"
+# required-features = ["yoloproofs"]
+
+
 [[test]]
-name = "two-variable-read"
+name = "variable-arguments-bigint"
 required-features = ["yoloproofs"]
+
+
+#[[test]]
+#name = "two-variable-read"
+#required-features = ["yoloproofs"]
 
 
 #[[test]]
