@@ -1,9 +1,9 @@
 //#![deny(missing_docs)]
 //use bulletproofs::r1cs::{ConstraintSystem, R1CSError, Variable};
-use super::{ConstraintSystem,LinearCombination, Variable};
+use super::{ConstraintSystem, LinearCombination, Variable};
 use curve25519_dalek::scalar::Scalar;
-use generators::{BulletproofGens, PedersenGens};
 use errors::R1CSError;
+use generators::{BulletproofGens, PedersenGens};
 //use bulletproofs::{BulletproofGens, PedersenGens};
 //use bulletproofs::r1cs::LinearCombination;
 
@@ -11,7 +11,7 @@ use errors::R1CSError;
 #[derive(Copy, Clone, Debug)]
 pub struct AllocatedQuantity {
     pub variable: Variable,
-    pub assignment: Option<u64>
+    pub assignment: Option<u64>,
 }
 
 /// test
@@ -20,15 +20,15 @@ pub struct AllocatedScalar {
     /// Variable
     pub variable: Variable,
     /// Scalar
-    pub assignment: Option<Scalar>
+    pub assignment: Option<Scalar>,
 }
 
 /// Enforces that the quantity of v is in the range [0, 2^n).
 pub fn positive_no_gadget<CS: ConstraintSystem>(
     cs: &mut CS,
     v: AllocatedQuantity,
-    n: usize
-    ,) -> Result<(), R1CSError> {
+    n: usize,
+) -> Result<(), R1CSError> {
     let mut constraint_v = vec![(v.variable, -Scalar::one())];
     let mut exp_2 = Scalar::one();
     for i in 0..n {
@@ -45,7 +45,7 @@ pub fn positive_no_gadget<CS: ConstraintSystem>(
         // Enforce that a = 1 - b, so they both are 1 or 0.
         cs.constrain(a + (b - 1u64));
 
-        constraint_v.push((b, exp_2)  );
+        constraint_v.push((b, exp_2));
         exp_2 = exp_2 + exp_2;
     }
 
@@ -56,6 +56,10 @@ pub fn positive_no_gadget<CS: ConstraintSystem>(
 }
 
 /// Constrain a linear combination to be equal to a scalar
-pub fn constrain_lc_with_scalar<CS: ConstraintSystem>(cs: &mut CS, lc: LinearCombination, scalar: &Scalar) {
+pub fn constrain_lc_with_scalar<CS: ConstraintSystem>(
+    cs: &mut CS,
+    lc: LinearCombination,
+    scalar: &Scalar,
+) {
     cs.constrain(lc - LinearCombination::from(*scalar));
 }

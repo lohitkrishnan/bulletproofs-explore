@@ -25,6 +25,7 @@ failure = "0.1"
 merlin = "1"
 clear_on_drop = "0.2"
 bigint = "4.4.1"
+num-bigint = "0.2.2"
 
 [dev-dependencies]
 hex = "0.3"
@@ -60,19 +61,22 @@ yoloproofs = []
 # required-features = ["yoloproofs"]
 
 
-[[test]]
-name = "variable-arguments-bigint"
-required-features = ["yoloproofs"]
+# [[test]]
+# name = "variable-arguments-bigint"
+# required-features = ["yoloproofs"]
 
+[[test]]
+name = "circuit-satisfy-check"
+required-features = ["yoloproofs"]
 
 #[[test]]
 #name = "two-variable-read"
 #required-features = ["yoloproofs"]
 
 
-#[[test]]
-#name = "two-shuffle-without-random"
-#required-features = ["yoloproofs"]
+# [[test]]
+# name = "two-shuffle-without-random"
+# required-features = ["yoloproofs"]
 
 #[[test]]
 #name = "variable-arguments"
@@ -82,9 +86,9 @@ required-features = ["yoloproofs"]
 #name = "two-shuffle-without-random-verify"
 #required-features = ["yoloproofs"]
 
-#[[test]]
-#name = "two-shuffle"
-#required-features = ["yoloproofs"]
+# [[test]]
+# name = "two-shuffle"
+# required-features = ["yoloproofs"]
 
 #[[test]]
 #name = "hash-preimage-prove"

@@ -53,6 +53,7 @@ pub fn prove(
     let mut prover_transcript = Transcript::new(b"ShuffleTest");
     // Make a prover instance
     let mut prover = Prover::new( &pc_gens, &mut prover_transcript);
+    println!("Constraints are == >> {:?}", prover.constraints);
 
     // Create commitments and allocate high-level variables for A, B, C, D
     let mut rng = rand::thread_rng();
@@ -100,7 +101,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn two_shuffle() {
+    fn two_shuffle_negative() {
         assert!(two_shuffle_helper(3, -6, 3, -6).is_ok());
         assert!(two_shuffle_helper(3, 6, 6, 3).is_ok());
         assert!(two_shuffle_helper(6, 6, 6, 6).is_ok());
