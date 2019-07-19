@@ -61,13 +61,13 @@ yoloproofs = []
 # required-features = ["yoloproofs"]
 
 
-# [[test]]
-# name = "variable-arguments-bigint"
-# required-features = ["yoloproofs"]
-
 [[test]]
-name = "circuit-satisfy-check"
+name = "variable-arguments-bigint"
 required-features = ["yoloproofs"]
+
+# [[test]]
+# name = "circuit-satisfy-check"
+# required-features = ["yoloproofs"]
 
 #[[test]]
 #name = "two-variable-read"

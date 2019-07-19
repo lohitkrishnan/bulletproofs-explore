@@ -262,7 +262,8 @@ mod tests {
 
     #[test]
     fn variable_argument_bigint() -> Result<(), Box<dyn Error>> {
-        let filename = "/Users/lohitkrishnan/Documents/IBM/Blockchain/ZKP/bullet-proofs-repo/bulletproofs/hash_const_r1cs_constraints_converted.txt";
+        //let filename = "/Users/lohitkrishnan/Documents/IBM/Blockchain/ZKP/bullet-proofs-repo/bulletproofs/hash_const_r1cs_constraints_converted.txt";
+        let filename = "/Users/lohitkrishnan/Documents/IBM/Blockchain/ZKP/bullet-proofs-repo/bulletproofs/hash-constraint-minusNum.txt";
         //let filename = "/Users/lohitkrishnan/Documents/IBM/Blockchain/ZKP/bullet-proofs-repo/bulletproofs/file.txt";
 
         let mut inputArr1: Vec<String> = Vec::new();
@@ -283,10 +284,11 @@ mod tests {
         //     println!("{}", i);
         // }
         //-----
-        let witnessFileName = "/Users/lohitkrishnan/Documents/IBM/Blockchain/ZKP/bullet-proofs-repo/bulletproofs/hash_const_r1cs_witness_converted.txt";
+        //let witnessFileName = "/Users/lohitkrishnan/Documents/IBM/Blockchain/ZKP/bullet-proofs-repo/bulletproofs/hash_const_r1cs_witness_converted.txt";
+        let witnessFileName = "/Users/lohitkrishnan/Documents/IBM/Blockchain/ZKP/bullet-proofs-repo/bulletproofs/hash-witness-minusNum.txt";
         //let witnessFileName = "/Users/lohitkrishnan/Documents/IBM/Blockchain/ZKP/bullet-proofs-repo/bulletproofs/sample-witness-input.txt";
         let mut witnessInput: Vec<u128> = Vec::new();
-        witnessInput.push(0u128);
+        witnessInput.push(1u128);
         let file = File::open(witnessFileName)?;
         let mut lines = BufReader::new(file).lines();
 
@@ -300,8 +302,8 @@ mod tests {
         //assert!(variable_argument_bigint_helper(&vec![0; len.parse::<usize>().unwrap()], &inputArr).is_ok());
         //assert!(variable_argument_bigint_helper(&vec![1,2, 1, 4, 4], &inputArr1).is_ok());
         //assert!(variable_argument_bigint_helper(&vec![0,2, 1, 4, 4], &inputArr1).is_ok());
-        //assert!(variable_argument_bigint_helper(&witnessInput, &inputArr1).is_ok());
-        println!("{:?}", variable_argument_bigint_helper(&witnessInput, &inputArr1).err());
+        assert!(variable_argument_bigint_helper(&witnessInput, &inputArr1).is_ok());
+        //println!("{:?}", variable_argument_bigint_helper(&witnessInput, &inputArr1).err());
         //assert!(variable_argument_bigint_helper(&vec![1,1, 1, 2, 4], &inputArr1).is_ok());
         //assert!(variable_argument_bigint_helper(&vec![3, 3, 6, 3]).is_err());
         Ok(())

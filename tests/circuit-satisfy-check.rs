@@ -38,6 +38,9 @@ pub fn getEquation(
     while term_cnt < n_terms {
         //i = i + 2;
         let mut varNum = circuitConfigArr[i].parse::<i32>().unwrap();
+        if varNum < 0 {
+            panic!("varNum is less than zero. i = {:} ", i);
+        }
         let mut coeff = circuitConfigArr[i + 1].clone();
         let mut isNeg = false;
         if (circuitConfigArr[i + 1].starts_with('-')) {
@@ -99,7 +102,8 @@ pub fn check_circuit_satisfy(
         i = i + circuitConfigArr[i].parse::<usize>().unwrap() * 2 + 1;
         //println!("after c - {}",i);
 
-        
+        println!("a = {:}", a);
+        println!("b = {:}", b);
         let mut ab : BigInt = a*b;
         println!("ab = {:}", ab);
         println!("c = {:}",c);
@@ -126,7 +130,7 @@ mod tests {
 
     #[test]
     fn circuit_satisfy_check() -> Result<(), Box<dyn Error>> {
-        let filename = "/Users/lohitkrishnan/Documents/IBM/Blockchain/ZKP/bullet-proofs-repo/bulletproofs/hash_const_r1cs_constraints_converted.txt";
+        let filename = "/Users/lohitkrishnan/Documents/IBM/Blockchain/ZKP/bullet-proofs-repo/bulletproofs/hash-constraint-minusNum.txt";
         //let filename = "/Users/lohitkrishnan/Documents/IBM/Blockchain/ZKP/bullet-proofs-repo/bulletproofs/file.txt";
         //let filename = "/Users/lohitkrishnan/Documents/IBM/Blockchain/ZKP/bullet-proofs-repo/bulletproofs/circuit-ex2.txt";
 
@@ -148,11 +152,11 @@ mod tests {
         //     println!("{}", i);
         // }
         //-----
-        let witnessFileName = "/Users/lohitkrishnan/Documents/IBM/Blockchain/ZKP/bullet-proofs-repo/bulletproofs/hash_const_r1cs_witness_converted.txt";
+        let witnessFileName = "/Users/lohitkrishnan/Documents/IBM/Blockchain/ZKP/bullet-proofs-repo/bulletproofs/hash-witness-minusNum.txt";
         //let witnessFileName = "/Users/lohitkrishnan/Documents/IBM/Blockchain/ZKP/bullet-proofs-repo/bulletproofs/sample-witness-input.txt";
         //let witnessFileName = "/Users/lohitkrishnan/Documents/IBM/Blockchain/ZKP/bullet-proofs-repo/bulletproofs/wit-ex2.txt";
         let mut witnessInput: Vec<u128> = Vec::new();
-        witnessInput.push(0u128);
+        witnessInput.push(1u128);
         let file = File::open(witnessFileName)?;
         let mut lines = BufReader::new(file).lines();
 
