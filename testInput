@@ -1,31 +1,36 @@
 /*
 ------------
-Linear Combination LCi
+Linear Combination LC_i Structure
 -------------
-lc-term-size
-index
-coefficient
+total_terms
+index1
+coefficient1
+index2
+coefficient2
+.
+.
+indexN
+coefficientN
 ------------
 
 -------------
-Constraint Ci
+Constraint C_i Structure
 -------------
-LCa
-LCb
-LCc
+LC_a
+LC_b
+LC_c
 ------------ 
 
 -------------
 Input File Structure
 -------------
-primary-input-size
-auxiliary-input-size
-C1
-C2
+input-size
+C_1
+C_2
 .
 .
 .
-Cn
+C_n
 ---------------
 */
 For (2x1 - 3x2)* 2x3 = x3 + x4
