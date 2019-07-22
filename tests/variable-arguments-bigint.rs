@@ -86,6 +86,11 @@ pub fn getEquation(
     <coefficient>
 
     For Eg : 
+     The  circuit has following R1CS constraints :
+    (2*x1) * (2*x2) = (x3 + x4)
+    x1 * 3*x2 = -1*x4
+    is as follows :
+
     4
     1
     1
