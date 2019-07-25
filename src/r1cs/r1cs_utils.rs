@@ -10,7 +10,9 @@ use generators::{BulletproofGens, PedersenGens};
 /// Represents a variable for quantity, along with its assignment.
 #[derive(Copy, Clone, Debug)]
 pub struct AllocatedQuantity {
+    /// variable
     pub variable: Variable,
+    /// assignment
     pub assignment: Option<u64>,
 }
 

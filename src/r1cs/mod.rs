@@ -17,6 +17,6 @@ pub use self::constraint_system::{
 pub use self::linear_combination::{LinearCombination, Variable};
 pub use self::proof::R1CSProof;
 pub use self::prover::Prover;
-pub use self::r1cs_utils::{constrain_lc_with_scalar, AllocatedScalar};
+pub use self::r1cs_utils::{constrain_lc_with_scalar, AllocatedScalar, AllocatedQuantity};
 pub use self::verifier::Verifier;
 pub use errors::R1CSError;

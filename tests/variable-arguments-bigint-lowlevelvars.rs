@@ -143,23 +143,32 @@ pub fn getEquation(
 */
 pub fn variable_argument_bigint<CS: ConstraintSystem>(
     cs: &mut CS,
-    varArr: &Vec<Variable>,
+    assignmentArr: &Vec<Option<u128>>,
     circuitConfigArr: &Vec<String>,
 ) -> Result<(), R1CSError> {
     // i maintains the current index in the circuitConfigArr which we are parsing
     let mut i: usize = 0;
+    // Create all the variables and store it in varArr
+
+    let varArr : Vec<Variable> = assignmentArr.iter().map(|&curAssignment| cs.allocate(curAssignment.map(|num| num.into())).unwrap() ).collect();
+
+    // let mut varArr : Vec<Variable> = Vec::new();
+    // for curAssignment in assignmentArr.into_iter() {
+    //     let (curVar) = cs.allocate(curAssignment.map(|num| num.into())).unwrap();
+    //     varArr.push(curVar);
+    // }
 
     while i < circuitConfigArr.len() {
         
-        let mut a = getEquation(varArr, circuitConfigArr, i);
+        let mut a = getEquation(&varArr, circuitConfigArr, i);
         circuitConfigArr[i].parse::<i32>().unwrap();
 
         
         i = i + circuitConfigArr[i].parse::<usize>().unwrap() * 2 + 1;
-        let mut b = getEquation(varArr, circuitConfigArr, i);
+        let mut b = getEquation(&varArr, circuitConfigArr, i);
         
         i = i + circuitConfigArr[i].parse::<usize>().unwrap() * 2 + 1;
-        let mut c = getEquation(varArr, circuitConfigArr, i);
+        let mut c = getEquation(&varArr, circuitConfigArr, i);
         
         i = i + circuitConfigArr[i].parse::<usize>().unwrap() * 2 + 1;
 
@@ -175,16 +184,16 @@ pub fn variable_argument_bigint<CS: ConstraintSystem>(
 pub fn prove(
     witnessArr: &[u128],
     circuitConfigArr: &Vec<String>,
-) -> Result<(R1CSProof, Vec<CompressedRistretto>), R1CSError> {
+) -> Result<(R1CSProof), R1CSError> {
     
-    // Convert witness from u128 array to Vec<Scalar>
-    let witnessScalarArr: Vec<Scalar> = witnessArr.iter().map(|&x| x.into()).collect();
+    // Convert witness from u128 array to Vec<Option<u128>>
+    let assignmentArr : Vec<Option<u128>> = witnessArr.iter().map(|&x| Some(x)).collect();
 
     let start = Instant::now();
 
     //  Create Generators
     let pc_gens = PedersenGens::default();
-    let bp_gens = BulletproofGens::new(65536, 1);
+    let bp_gens = BulletproofGens::new(131072, 1);
     println!("Generators created at {:?} ", start.elapsed());
 
     // Create a new Prover Transcript
@@ -194,22 +203,8 @@ pub fn prove(
 
     println!("Prover object created at  {:?} ", start.elapsed());
 
-    let mut rng = rand::thread_rng();
-
-    // Maintain comArr : Vector of Commitments of all the variables
-    let mut comArr: Vec<CompressedRistretto> = Vec::new();
-    // Maintain varArr : Vector of all the variables
-    let mut varArr: Vec<Variable> = Vec::new();
-
-    for idx in 0..witnessScalarArr.len() {
-        let (curCom, curVar) = prover.commit(witnessScalarArr[idx], Scalar::random(&mut rng));
-        varArr.push(curVar.clone());
-        comArr.push(curCom.clone());
-    }
-    println!("All Commitments added at  {:?} ", start.elapsed());
-
     // Add the Circuit to the transcript from the circuitConfigArr
-    variable_argument_bigint(&mut prover, &varArr,  circuitConfigArr)?;
+    variable_argument_bigint(&mut prover, &assignmentArr,  circuitConfigArr)?;
     println!("Circuit added in the transcript at  {:?} ", start.elapsed());
 
     // Create a proof
@@ -217,19 +212,19 @@ pub fn prove(
     //total_proving += start.elapsed();
     println!("prover.prove function completed at  {:?} ", start.elapsed());
 
-    Ok((proof, comArr))
+    Ok((proof))
 }
 
 pub fn verify(
     proof: R1CSProof,
-    ComArr: &Vec<CompressedRistretto>,
+    variables_size : usize,
     circuitConfigArr: &Vec<String>,
 ) -> Result<(), R1CSError> {
     let start = Instant::now();
 
     //  Create Generators
     let pc_gens = PedersenGens::default();
-    let bp_gens = BulletproofGens::new(65536, 1);
+    let bp_gens = BulletproofGens::new(131072, 1);
     println!("Generators created at  {:?} ", start.elapsed());
 
     // Create a new Verifier Transcript
@@ -238,16 +233,14 @@ pub fn verify(
     let mut verifier = Verifier::new(&mut verifier_transcript);
     println!("Verifier object created at  {:?} ", start.elapsed());
 
-    let mut varArr: Vec<Variable> = Vec::new();
+    let mut assignmentArr : Vec<Option<u128>> = Vec::new();;
 
-    for idx in 0..ComArr.len() {
-        let curVar = verifier.commit(ComArr[idx]);
-        varArr.push(curVar.clone());
+    for idx in 0..variables_size {
+        assignmentArr.push(None);
     }
-    println!("All Commitments added at  {:?} ", start.elapsed());
 
     // Add gadget constraints to the verifier's constraint system
-    variable_argument_bigint(&mut verifier, &varArr, circuitConfigArr)?;
+    variable_argument_bigint(&mut verifier, &assignmentArr, circuitConfigArr)?;
     println!("Circuit added to transcript at  {:?} ", start.elapsed());
     // Verify the proof
     let op = verifier.verify(&proof, &pc_gens, &bp_gens);
@@ -288,8 +281,8 @@ mod tests {
         }
         println!("Witness Vector Size = {}", witnessInput.len());
 
-        assert!(variable_argument_bigint_helper(&witnessInput, &circuitConfigArr).is_ok());
-        //println!("{:?}", variable_argument_bigint_helper(&witnessInput, &circuitConfigArr).err());
+        //assert!(variable_argument_bigint_helper(&witnessInput, &circuitConfigArr).is_ok());
+        println!("{:?}", variable_argument_bigint_helper(&witnessInput, &circuitConfigArr).err());
         Ok(())
     }
 
@@ -303,14 +296,14 @@ mod tests {
         println!("============== Prover ====================");
         let proveStartTime = Instant::now();
         // Function which generates proof and commitmentVector given the witness and the circuitConfiguration.
-        let (proof, comVec) = prove(witnessInput, circuitConfigArr)?;
+        let (proof) = prove(witnessInput, circuitConfigArr)?;
         totalProvingTime += proveStartTime.elapsed();
         println!("Total time for prove function {:?} seconds", totalProvingTime);
 
         println!("============== Verifier ====================");
         let verifyStartTime = Instant::now();
         //Function to verify proof
-        let op = verify(proof, &comVec, circuitConfigArr);
+        let op = verify(proof, witnessInput.len(), circuitConfigArr);
         totalVerificationTime += verifyStartTime.elapsed();
         println!("Total verifying time  {:?} seconds", totalVerificationTime);
         return op;
