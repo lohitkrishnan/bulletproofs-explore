@@ -164,9 +164,8 @@ pub fn variable_argument_bigint<CS: ConstraintSystem>(
         i = i + circuitConfigArr[i].parse::<usize>().unwrap() * 2 + 1;
 
         let (_, _, lhs) = cs.multiply(a, b);
-        let (_, _, rhs) = cs.multiply(c, Scalar::one().into());
         
-        cs.constrain(lhs - rhs);
+        cs.constrain(lhs - c);
     }
 
     Ok(())

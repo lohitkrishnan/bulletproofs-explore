@@ -60,13 +60,17 @@ yoloproofs = []
 # name = "negative-input-test"
 # required-features = ["yoloproofs"]
 
-[[test]]
-name = "variable-arguments-bigint-lowlevelvars"
-required-features = ["yoloproofs"]
+# [[test]]
+# name = "variable-arguments-bigint-lowlevelvars"
+# required-features = ["yoloproofs"]
 
 # [[test]]
-# name = "variable-arguments-bigint"
+# name = "sha-circuit"
 # required-features = ["yoloproofs"]
+
+[[test]]
+name = "variable-arguments-bigint"
+required-features = ["yoloproofs"]
 
 # [[test]]
 # name = "low-level-var-example"
